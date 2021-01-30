@@ -14,9 +14,8 @@ namespace Farkle
     {
         public static void Main(string[] args)
         {
-            Farkle.FarkleDiceGame farkleDiceGame = new FarkleDiceGame();
-
-            farkleDiceGame.RollDice();
+            Farkle.FarklePlay farkleGame = new FarklePlay();
+            farkleGame.Play();
 
             //CreateHostBuilder(args).Build().Run();
         }

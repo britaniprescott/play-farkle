@@ -2,9 +2,8 @@ using System;
 
 namespace Farkle
 {
-    public class FarkleDiceGame
+    public static class FarkleScoring
     {
-        private
         const int SINGLE_ONE = 100;
         const int SINGLE_FIVE = 50;
 
@@ -18,50 +17,15 @@ namespace Farkle
 
         const int ONE_THROUGH_SIX_STRAIGHT = 1500;
 
-        int remainingDice;
-        int rollScore;
-        int currentTurnScore;
-
-        int[] rolledDice  = new int[6];
-        //int[] savedDice   = new int[6];
-        //int[] diceToCheck = new int[6];
-
-        bool youFarkled;
-
-        public FarkleDiceGame()
-        {
-            youFarkled = false;
-            remainingDice = 6;
-            rollScore = 0;
-            currentTurnScore = 0;
-        }
-
-        void PrintDiceRoll(int[] dice)
-        {
-            string diceRoll = "";
-            for (int i = 0; i < 6; ++i)
-            {
-                diceRoll = diceRoll + (dice[i]);
-                if (i != 5)
-                {
-                    diceRoll = diceRoll + " ";
-                }
-            }
-
-            Console.WriteLine(diceRoll);
-        }
-
-        void ClearDice(int[] dice)
+        static void ClearDice(int[] dice)
         {
             for (int i = 0; i < 6; ++i)
             {
-                rolledDice[i] = 0;
-                //savedDice[i] = 0;
                 dice[i] = 0;
             }
         }
 
-        int CountDice(int[] dice)
+        public static int CountDice(int[] dice)
         {
             int totalDice = 0;
 
@@ -73,7 +37,7 @@ namespace Farkle
             return totalDice;
         }
 
-        int[] OrganizeDice(int[] dice)
+        static int[] OrganizeDice(int[] dice)
         {
             int[] organizedDice = new int[6];
 
@@ -90,47 +54,52 @@ namespace Farkle
             return organizedDice;
         }
 
-        void AttemptToScoreDice(int[] dice)
+        public static int AttemptToScoreDice(int[] dice)
         {
             int[] organizedDice = OrganizeDice(dice);
             int numberOfDice = CountDice(dice);
 
-            rollScore = 0;
-
             if (numberOfDice == 6)
             {
-                AttemptToScoreSixDice(organizedDice);
+                return AttemptToScoreSixDice(organizedDice);
             }
             else if (numberOfDice == 5)
             {
-                AttemptToScoreFiveDice(organizedDice);
+                return AttemptToScoreFiveDice(organizedDice);
             }
             else if (numberOfDice == 4)
             {
-                AttemptToScoreFourDice(organizedDice);
+                return AttemptToScoreFourDice(organizedDice);
             }
             else if (numberOfDice == 3)
             {
-                AttemptToScoreThreeDice(organizedDice);
+                return AttemptToScoreThreeDice(organizedDice);
             }
             else
             {
-                AttemptToScoreSingleDie(organizedDice);
-            }
-
-            if (rollScore == 0)
-            {
-                currentTurnScore = 0;
-                youFarkled = true;
-            }
-            else
-            {
-                youFarkled = false;
+                return AttemptToScoreSingleDie(organizedDice);
             }
         }
 
-        void AttemptToScoreSingleDie(int[] dice)
+        public static int GetCurrent(int[] dice)
         {
+             return AttemptToScoreDice(dice);
+        }
+
+        public static bool GetFarkleStatus(int[] dice)
+        {
+            if (AttemptToScoreDice(dice) == 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        static int AttemptToScoreSingleDie(int[] dice)
+        {
+            int rollScore = 0;
+
             for (int i = 0; i < 6; ++i)
             {
                 if (dice[i] == 1)
@@ -144,65 +113,74 @@ namespace Farkle
                     dice[i] = 0;
                 }
             }
+
+            return rollScore;
         }
 
-        void AttemptToScoreThreeDice(int[] dice)
+        static int AttemptToScoreThreeDice(int[] dice)
         {
+            int rollScore = 0;
+
             for (int i = 1; i < 6; ++i)
             {
                 if (dice[i] == 3)
                 {
                     rollScore += 100 * (i + 1);
                     dice[i] = 0;
-                    return;
                 }
             }
 
-            AttemptToScoreSingleDie(dice);
+            return rollScore + AttemptToScoreSingleDie(dice);
         }
 
-        void AttemptToScoreFourDice(int[] dice)
+        static int AttemptToScoreFourDice(int[] dice)
         {
+            int rollScore = 0;
+
             for (int i = 0; i < 6; ++i)
             {
                 if (dice[i] == 4)
                 {
                     rollScore += FOUR_OF_A_KIND;
                     dice[i] = 0;
-                    return;
                 }
             }
-            AttemptToScoreThreeDice(dice);
+
+            return rollScore + AttemptToScoreThreeDice(dice);
         }
 
-        void AttemptToScoreFiveDice(int[] dice)
-            {
-                for (int i = 0; i < 6; ++i)
-                {
-                    if (dice[i] == 5)
-                    {
-                        rollScore += FIVE_OF_A_KIND;
-                        dice[i] = 0;
-                        return;
-                    }
-                }
-
-                AttemptToScoreFourDice(dice);
-        }
-
-        void AttemptToScoreSixDice(int[] dice)
+        static int AttemptToScoreFiveDice(int[] dice)
         {
+            int rollScore = 0;
+
+            for (int i = 0; i < 6; ++i)
+            {
+                if (dice[i] == 5)
+                {
+                    rollScore += FIVE_OF_A_KIND;
+                    dice[i] = 0;
+                }
+            }
+
+            return rollScore + AttemptToScoreFourDice(dice);
+        }
+
+        static int AttemptToScoreSixDice(int[] dice)
+        {
+            int rollScore = 0;
+
             int ones = 0;
             int twos = 0;
             int threes = 0;
             int fours = 0;
+
             for (int i = 0; i < 6; ++i)
             {
                 if (dice[i] == 6)
                 {
                     rollScore += SIX_OF_A_KIND;
                     dice[i] = 0;
-                    return;
+                    return rollScore;
                 }
                 else if (dice[i] == 4)
                 {
@@ -243,76 +221,7 @@ namespace Farkle
                 ClearDice(dice);
             }
 
-            AttemptToScoreFiveDice(dice);
-        }
-
-        public
-
-        void RollDice()
-        {
-            Random randomBetween1And6 = new Random();
-            int diceRoll;
-
-            for (int i = 0; i < remainingDice; ++i)
-            {
-                diceRoll = randomBetween1And6.Next(1, 7);
-                rolledDice[i] = diceRoll;
-            }
-
-            AttemptToScoreDice(rolledDice);
-
-            PrintDiceRoll(rolledDice);
-
-            if (youFarkled)
-            {
-                Console.WriteLine("YOU FARKLED! NEXT PLAYER'S TURN");
-                // NextPlayerTurn(false);
-            }
-        }
-
-        void SaveDice(int[] diceToSave)
-        {
-            int numberOfDiceRolled = CountDice(rolledDice);
-            int numberOfDiceSaved = CountDice(diceToSave);
-
-            if (!youFarkled)
-            {
-                AttemptToScoreDice(diceToSave);
-                currentTurnScore += rollScore;
-
-                if ((numberOfDiceRolled - numberOfDiceSaved) == 0)
-                {
-                    remainingDice = 6;
-                }
-                else
-                {
-                    remainingDice = numberOfDiceRolled - numberOfDiceSaved;
-                }
-            }
-        }
-
-        //void Pass()
-
-        // void ContinueRolling(bool continue)
-
-        int[] GetRolledDice()
-        {
-            return rolledDice;
-        }
-
-        bool GetFarkleStatus()
-        {
-            return youFarkled;
-        }
-
-        int GetCurrentTurnScore()
-        {
-            return currentTurnScore;
-        }
-
-        int GetRemainingDiceToRoll()
-        {
-            return remainingDice;
+            return AttemptToScoreFiveDice(dice);
         }
     }
 }

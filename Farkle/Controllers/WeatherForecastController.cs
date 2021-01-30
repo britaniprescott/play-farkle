@@ -24,10 +24,10 @@ namespace Farkle.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<FarkleDiceGame> Get()
+        public IEnumerable<FarklePlay> Get()
         {
             var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new FarkleDiceGame
+            return Enumerable.Range(1, 5).Select(index => new FarklePlay
             {
                 //Date = DateTime.Now.AddDays(index),
                 //TemperatureC = rng.Next(-20, 55),
