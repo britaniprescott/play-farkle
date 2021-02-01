@@ -8,7 +8,7 @@ namespace Farkle
         const int MINIMUM_FIRST_SCORE = 500;
         const int SCORE_TO_WIN = 10000;
 
-        IDictionary<int, int> playerScores = new Dictionary<int, int>();
+        Dictionary<int, int> playerScores = new Dictionary<int, int>();
         int playerTurn;
         int remainingDice;
         int currentTurnScore;
@@ -25,18 +25,23 @@ namespace Farkle
             remainingDice = 6;
         }
 
-        public void BeginGame(int playerCount)
+        private void BeginGame(int playerCount)
         {
             //string name;
-            for (int i = 1; i < playerCount; ++i)
+            for (int i = 1; i < playerCount + 1; ++i)
             {
-                //Console.WriteLine("Enter Player {1} Name:", i);
+                //Console.WriteLine("Enter Player {0} Name:", i);
                 //name = Console.ReadLine();
                 playerScores.Add(i, 0);
             }
+
+            foreach (KeyValuePair<int, int> kvp in playerScores)
+            {
+                Console.WriteLine(kvp);
+            }
         }
 
-        public void EndGame()
+        private void EndGame()
         {
             Console.WriteLine("End Game");
         }
@@ -56,6 +61,7 @@ namespace Farkle
                 if (currentTurnScore == 0)
                 {
                     continuePrevious = false;
+                    currentTurnScore = 0;
                 }
                 else
                 {
@@ -64,7 +70,6 @@ namespace Farkle
                     if (continuePreviousPlayerTurn == "yes")
                     {
                         continuePrevious = true;
-                        currentTurnScore = 0;
                     }
                     else
                     {
@@ -73,22 +78,31 @@ namespace Farkle
                 }
 
                 NextPlayerTurn(continuePrevious, playerCount);
+
+                for (int i = 1; i < playerCount + 1; ++i)
+                {
+                    Console.WriteLine("Player {0} Score: " + playerScores[i], i);
+                }
             }
         }
 
-        public void TakeTurn(bool continuePrevious)
+        private void TakeTurn(bool continuePrevious)
         {
-            bool keepRolling = true;
+            Console.WriteLine("Player {0} Turn:", playerTurn);
+
+            //bool keepRolling = true;
             string continueTurn;
 
-            while (keepRolling)
+            while (true)
             {
                 RollDice();
 
                 if (Farkle.FarkleScoring.GetFarkleStatus(rolledDice))
                 {
                     Console.WriteLine("YOU FARKLED! NEXT PLAYER'S TURN");
-                    //NextPlayerTurn(false);
+                    currentTurnScore = 0;
+                    remainingDice = 6;
+                    break;//NextPlayerTurn(false);
                 }
                 else
                 {
@@ -96,11 +110,37 @@ namespace Farkle
 
                     remainingDice = CalculateRemainingDice(savedDice);
 
-                    currentTurnScore = Farkle.FarkleScoring.AttemptToScoreDice(savedDice);
+                    Console.WriteLine("Remaining Dice: " + remainingDice);
 
-                    if (currentTurnScore > MINIMUM_FIRST_SCORE)
+                    currentTurnScore += Farkle.FarkleScoring.GetRollScore(savedDice);
+
+                    Console.WriteLine("Current Turn Score: ", currentTurnScore);
+
+                    if (playerScores[playerTurn] == 0)
                     {
-                        Console.WriteLine("Would you like to continue rolling?");
+                        if (currentTurnScore > MINIMUM_FIRST_SCORE)
+                        {
+                            Console.WriteLine("You are currently at {0} points for this turn. Would you like to continue rolling?", currentTurnScore);
+                            continueTurn = Console.ReadLine();
+                            if (continueTurn == "yes")
+                            {
+                                RollDice();
+                            }
+                            else
+                            {
+                                AddToPlayerScore(currentTurnScore);
+                                break;//NextPlayerTurn();
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("You are currently at {0} points for this turn. You must score at least 500 on your first turn. Continue rolling.", currentTurnScore);
+
+                        }
+                    }
+                    else if (currentTurnScore > 0)
+                    {
+                        Console.WriteLine("You are currently at {0} points for this turn. Would you like to continue rolling?", currentTurnScore);
                         continueTurn = Console.ReadLine();
                         if (continueTurn == "yes")
                         {
@@ -109,22 +149,25 @@ namespace Farkle
                         else
                         {
                             AddToPlayerScore(currentTurnScore);
-                            //NextPlayerTurn();
+                            break;//NextPlayerTurn();
                         }
                     }
                 }
             }
         }
 
-        public void NextPlayerTurn(bool continueTurn, int playerCount)
+        private void NextPlayerTurn(bool continueTurn, int playerCount)
         {
             playerTurn = playerTurn % playerCount + 1;
         }
 
-        public void RollDice()
+        private void RollDice()
         {
+            rolledDice = Farkle.FarkleScoring.ClearDice(rolledDice);
             Random randomBetween1And6 = new Random();
             int diceRoll;
+
+            Console.WriteLine("Remaining Dice in RollDice(): " + remainingDice);
 
             for (int i = 0; i < remainingDice; ++i)
             {
@@ -141,9 +184,9 @@ namespace Farkle
             }*/
         }
 
-        void AddToPlayerScore(int score)
+        private void AddToPlayerScore(int score)
         {
-            if (playerScores[playerTurn] >= 500)
+            if ((currentTurnScore >= MINIMUM_FIRST_SCORE) || (playerScores[playerTurn] > 0))
             {
                 playerScores[playerTurn] += score;
             }
@@ -153,12 +196,12 @@ namespace Farkle
                 lastRound = true;
                 if (playerTurn == playerScores.Count)
                 {
-                    Console.WriteLine("Game is Over. Player {1} Wins!", playerTurn);
+                    Console.WriteLine("Game is Over. Player {0} Wins!", playerTurn);
                     endOfGame = true;
                 }
                 else
                 {
-                    Console.WriteLine("Each player after Player {1} has one more chance to score.");
+                    Console.WriteLine("Each player after Player {0} has one more chance to score.");
                     //NextPlayerTurn();
                 }
             }
@@ -190,7 +233,7 @@ namespace Farkle
 
             for (int i = 0; i < numberOfDiceRolled; ++i)
             {
-                Console.WriteLine("Would you like to save die {1}?", i + 1);
+                Console.WriteLine("Would you like to save die {0}?", i + 1);
                 if (Console.ReadLine() == "yes")
                 {
                     diceToSave[i] = rolledDice[i];
